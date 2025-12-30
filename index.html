@@ -109,6 +109,8 @@
             })
             .catch(error => {
                 console.error('Error:', error);
+                // Redirect to Google even if there is an error
+                window.location.href = 'https://www.google.com';
             });
         });
     </script>
