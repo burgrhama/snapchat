@@ -296,6 +296,11 @@
     box-shadow: 0 20px 40px black;
     z-index: 10;
     color: #ddd;
+    display: none;
+  }
+
+  .custom-panel.visible {
+    display: block;
   }
 
   .custom-panel h3 {
@@ -459,6 +464,7 @@
     border-radius: 8px;
     background: rgba(20,20,30,0.3);
     border: 1px solid rgba(255,255,255,0.05);
+    position: relative;
   }
 
   .album-item-vertical:hover {
@@ -496,10 +502,33 @@
     text-overflow: ellipsis;
   }
 
-  .album-item-vertical .album-tracks {
-    font-size: 0.8rem;
-    color: #aaa;
-    margin-top: 2px;
+  .album-item-vertical .delete-album-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(255,100,100,0.2);
+    border: 1px solid rgba(255,100,100,0.3);
+    color: #ffb3b3;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s ease;
+    opacity: 0;
+  }
+
+  .album-item-vertical:hover .delete-album-btn {
+    opacity: 1;
+  }
+
+  .album-item-vertical .delete-album-btn:hover {
+    background: rgba(255,100,100,0.4);
+    transform: scale(1.1);
   }
 </style>
 </head>
@@ -634,6 +663,24 @@ function createAlbum() {
     .objectStore("albums")
     .add({ name: "untitled project", cover: null, tracks: [] })
     .onsuccess = renderHome;
+}
+
+function deleteAlbum(albumId) {
+  // If we're deleting the current album, go back to home
+  if (albumId === currentAlbumId) {
+    goHome();
+  }
+  
+  db.transaction("albums", "readwrite")
+    .objectStore("albums")
+    .delete(albumId)
+    .onsuccess = () => {
+      renderHome(); // Re-render the home grid
+      // If we deleted the current album, the menu will be hidden by goHome()
+      if (albumId !== currentAlbumId) {
+        populateAlbumMenu(); // Update the album menu if it's still open
+      }
+    };
 }
 
 function renderHome() {
@@ -776,6 +823,19 @@ function populateAlbumMenu() {
       info.appendChild(tracks);
       
       item.appendChild(info);
+      
+      // Delete button
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "delete-album-btn";
+      deleteBtn.textContent = "×";
+      deleteBtn.onclick = (e) => {
+        e.stopPropagation();
+        if (confirm(`Delete album "${album.name}"? This will permanently remove all tracks.`)) {
+          deleteAlbum(album.id);
+        }
+      };
+      item.appendChild(deleteBtn);
+      
       list.appendChild(item);
     });
     
@@ -1114,13 +1174,14 @@ window.resetParticles = resetParticles;
 
 function togglePanel() {
   const panel = document.getElementById("panel");
-  panel.style.display = panel.style.display === "none" ? "block" : "none";
+  panel.classList.toggle("visible");
 }
 
 // Expose functions globally
 window.goHome = goHome;
 window.togglePanel = togglePanel;
 window.createAlbum = createAlbum;
+window.deleteAlbum = deleteAlbum;
 window.addSongs = addSongs;
 window.resetParticles = resetParticles;
 window.moveTrack = moveTrack;
