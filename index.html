@@ -530,6 +530,84 @@
     background: rgba(255,100,100,0.4);
     transform: scale(1.1);
   }
+
+  .queue-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(10,10,22,0.95);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 20px;
+    max-width: 500px;
+    max-height: 70vh;
+    overflow-y: auto;
+    z-index: 200;
+    color: #ddd;
+  }
+
+  .queue-modal h3 {
+    margin-bottom: 15px;
+    color: #e8e0ff;
+  }
+
+  .queue-speed {
+    margin-bottom: 15px;
+  }
+
+  .queue-speed label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 300;
+  }
+
+  .queue-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    background: rgba(20,20,30,0.3);
+    border-radius: 8px;
+    margin-bottom: 5px;
+  }
+
+  .queue-item .track-name {
+    flex: 1;
+    font-weight: 500;
+  }
+
+  .queue-item .queue-controls {
+    display: flex;
+    gap: 10px;
+  }
+
+  .queue-item button {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+  }
+
+  .queue-item button:hover {
+    background: rgba(255,255,255,0.2);
+  }
+
+  .queue-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: #e8e0ff;
+    font-size: 20px;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
@@ -579,7 +657,7 @@
 </div>
 
 <!-- CUSTOMIZATION PANEL WITH REACTIVITY SLIDER (saved settings) -->
-<div class="custom-panel" id="panel" style="display:none;">
+<div class="custom-panel" id="panel">
 <button class="close-btn" onclick="togglePanel()">×</button>
 <h3>particle lab</h3>
 
@@ -597,6 +675,9 @@
 // ========== IndexedDB and music app ==========
 let db;
 let currentAlbumId = null;
+let currentAlbumTracks = [];
+let currentTrackIndex = -1;
+let playQueue = [];
 const request = indexedDB.open("PiratedUntitledDB", 1);
 request.onupgradeneeded = e => {
   db = e.target.result;
@@ -711,6 +792,7 @@ function openAlbum(id) {
     .objectStore("albums")
     .get(id).onsuccess = e => {
       const album = e.target.result;
+      currentAlbumTracks = album.tracks;
       const title = document.getElementById("albumTitle");
       title.textContent = album.name;
       title.onclick = () => {
@@ -873,7 +955,7 @@ function renderTracks(album) {
     // Track name
     const nameSpan = document.createElement("span");
     nameSpan.textContent = (index + 1) + ". " + t.name;
-    nameSpan.onclick = () => playTrack(t.blob);
+    nameSpan.onclick = () => playTrack(index);
     
     // Menu button
     const menuBtn = document.createElement("div");
@@ -910,6 +992,8 @@ function showTrackMenu(button, album, trackIndex) {
     <input type="number" id="positionInput" min="1" max="${album.tracks.length}" value="${trackIndex + 1}" placeholder="New position">
     <button class="menu-btn" onclick="moveTrack(${trackIndex}, this)">Move</button>
     <button class="menu-btn delete-btn" onclick="deleteTrack(${trackIndex}, this)">Delete</button>
+    <button class="menu-btn" onclick="addToQueue(${trackIndex}, this)">Add to Queue</button>
+    <button class="menu-btn" onclick="showQueue()">View Queue</button>
   `;
   
   document.body.appendChild(menu);
@@ -978,6 +1062,65 @@ function deleteTrack(trackIndex, button) {
     };
 }
 
+function addToQueue(trackIndex, button) {
+  playQueue.push(trackIndex);
+  button.textContent = "Added to Queue";
+  setTimeout(() => {
+    button.closest('.track-menu').remove();
+  }, 1000);
+}
+
+function showQueue() {
+  // Remove existing queue modal
+  const existing = document.querySelector('.queue-modal');
+  if (existing) existing.remove();
+
+  // Create modal
+  const modal = document.createElement('div');
+  modal.className = 'queue-modal';
+
+  let html = `
+    <button class="queue-close" onclick="this.parentElement.remove()">×</button>
+    <h3>Play Queue</h3>
+  `;
+
+  if (playQueue.length === 0) {
+    html += '<p>No tracks in queue</p>';
+  } else {
+    playQueue.forEach((index, queueIndex) => {
+      const track = currentAlbumTracks[index];
+      html += `
+        <div class="queue-item">
+          <span class="track-name">${track.name}</span>
+          <div class="queue-controls">
+            <button onclick="removeFromQueue(${queueIndex})">Remove</button>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  modal.innerHTML = html;
+  document.body.appendChild(modal);
+
+  // Setup speed slider
+  const speedSlider = modal.querySelector('#speedSlider');
+  const speedValue = modal.querySelector('#speedValue');
+  speedSlider.addEventListener('input', (e) => {
+    const speed = parseFloat(e.target.value);
+    audioPlayer.playbackRate = speed;
+    speedValue.textContent = speed.toFixed(1) + 'x';
+  });
+
+  // Close menu
+  document.querySelector('.track-menu').remove();
+}
+
+function removeFromQueue(queueIndex) {
+  playQueue.splice(queueIndex, 1);
+  showQueue(); // Refresh the queue display
+}
+
 
 // ========== MUSIC functions continued ==========
 function addSongs() {
@@ -992,11 +1135,24 @@ function addSongs() {
     };
 }
 
-function playTrack(blob) {
+function playTrack(index) {
+  const track = currentAlbumTracks[index];
   const player = document.getElementById("audioPlayer");
-  player.src = URL.createObjectURL(blob);
+  player.src = URL.createObjectURL(track.blob);
   player.play();
-  document.getElementById("nowPlaying").innerText = "● " + (blob.name || "track");
+  document.getElementById("nowPlaying").innerText = "● " + track.name;
+  currentTrackIndex = index;
+}
+
+function playNext() {
+  if (playQueue.length > 0) {
+    const index = playQueue.shift();
+    playTrack(index);
+  } else {
+    if (currentTrackIndex >= 0 && currentTrackIndex < currentAlbumTracks.length - 1) {
+      playTrack(currentTrackIndex + 1);
+    }
+  }
 }
 
 // ========== ADVANCED PARTICLE SYSTEM ==========
@@ -1010,6 +1166,7 @@ let audioContext = null;
 let analyser = null;
 let source = null;
 let audioPlayer = document.getElementById('audioPlayer');
+audioPlayer.addEventListener('ended', playNext);
 
 const reactSlider = document.getElementById('reactivitySlider');
 const reactSpan = document.getElementById('reactValue');
@@ -1186,6 +1343,9 @@ window.addSongs = addSongs;
 window.resetParticles = resetParticles;
 window.moveTrack = moveTrack;
 window.deleteTrack = deleteTrack;
+window.addToQueue = addToQueue;
+window.showQueue = showQueue;
+window.removeFromQueue = removeFromQueue;
 window.switchAlbum = switchAlbum;
 window.toggleAlbumMenu = toggleAlbumMenu;
 window.setReactive = function() {};
