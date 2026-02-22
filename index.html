@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>particle lab · saved settings · 10k wrap</title>
+<title>pirated untitled · drag to reorder</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -53,6 +53,7 @@
     letter-spacing: -1px;
     text-shadow: 0 0 20px rgba(150,150,240,0.2);
     color: #f0f0ff;
+    display: inline-block;
   }
 
   .btn {
@@ -78,8 +79,8 @@
 
   .album-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, 220px);
-    gap: 40px;
+    grid-template-columns: repeat(auto-fill, 160px);
+    gap: 25px;
     padding: 40px 60px;
   }
 
@@ -117,7 +118,7 @@
 
   .album-view {
     display: none;
-    padding: 50px 80px;
+    padding: 30px 80px 50px 80px;
   }
 
   .album-layout {
@@ -155,35 +156,107 @@
   }
   .album-title:hover { border-bottom: 2px solid rgba(190,180,250,0.35); }
 
+  /* TRACK LIST – draggable items */
+  .track-list {
+    margin-top: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 10px;
+  }
+
   .track {
-    padding: 16px 0;
+    padding: 16px 18px;
     border-bottom: 1px solid rgba(255,255,255,0.05);
     display: flex;
     justify-content: space-between;
     align-items: center;
     font-size: 1.1rem;
+    background: rgba(15,15,25,0.3);
+    border-radius: 16px;
+    margin-bottom: 6px;
+    backdrop-filter: blur(4px);
+    cursor: grab;
+    transition: background 0.1s, transform 0.1s;
+    border: 1px solid transparent;
+    user-select: none;
+  }
+  .track:active {
+    background: rgba(40,40,70,0.6);
+    border-color: rgba(255,255,255,0.2);
+    transform: scale(1.01);
   }
 
   .track span:first-child {
     cursor: pointer;
-    opacity: 0.85;
-    transition: 0.1s;
-  }
-  .track span:first-child:hover {
-    opacity: 1;
-    color: white;
+    flex: 1;
   }
 
-  .remove-btn {
-    opacity: 0.22;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 1.4rem;
-    line-height: 1;
-    transition: 0.2s;
-    padding: 0 8px;
+  .track-menu {
+    position: absolute;
+    background: rgba(20,20,40,0.95);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    z-index: 100;
+    min-width: 200px;
+    color: #ddd;
   }
-  .remove-btn:hover { opacity: 1; color: #ffb3b3; }
+
+  .track-menu h4 {
+    margin: 0 0 12px 0;
+    font-size: 0.9rem;
+    color: #e8e0ff;
+  }
+
+  .track-menu .position-info {
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+    opacity: 0.8;
+  }
+
+  .track-menu input {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(40,40,60,0.8);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    color: #fff;
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+  }
+
+  .track-menu input:focus {
+    outline: none;
+    border-color: rgba(160,160,255,0.5);
+  }
+
+  .track-menu .menu-btn {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    margin-right: 8px;
+    transition: 0.2s;
+  }
+
+  .track-menu .menu-btn:hover {
+    background: rgba(255,255,255,0.2);
+  }
+
+  .track-menu .delete-btn {
+    background: rgba(255,100,100,0.2);
+    border-color: rgba(255,100,100,0.3);
+    color: #ffb3b3;
+  }
+
+  .track-menu .delete-btn:hover {
+    background: rgba(255,100,100,0.3);
+  }
 
   .player {
     position: fixed;
@@ -231,6 +304,7 @@
     font-size: 1.6rem;
     color: #e8e0ff;
     letter-spacing: -0.5px;
+    margin-top: 10px;
   }
 
   .custom-panel label {
@@ -266,24 +340,166 @@
     font-size: 0.9rem;
   }
 
-  .custom-panel .btn {
-    margin-left: 0;
-    width: 100%;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.1);
-    margin-top: 16px;
-  }
-  .custom-panel .btn:hover {
-    background: rgba(255,255,255,0.15);
+  .custom-panel .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: #e8e0ff;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: 0.2s ease;
   }
 
-  #songUpload {
-    background: #202032;
-    color: #ddd;
-    padding: 8px 12px;
+  .custom-panel .close-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+  }
+
+  .album-dropdown {
+    background: rgba(200,200,240,0.08);
+    color: #f0f0ff;
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 12px 16px;
     border-radius: 40px;
-    border: 1px solid #40405a;
-    font-size: 0.9rem;
+    font-weight: 500;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    cursor: pointer;
+    transition: 0.2s ease;
+    min-width: 200px;
+  }
+
+  .album-dropdown:hover {
+    background: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.3);
+  }
+
+  .album-dropdown:focus {
+    outline: none;
+    border-color: rgba(160,160,255,0.5);
+    box-shadow: 0 4px 12px rgba(160,160,255,0.2);
+  }
+
+  .album-dropdown option {
+    background: #1a1a2a;
+    color: #f0f0ff;
+  }
+
+  .cover-container {
+    position: relative;
+    display: inline-block;
+  }
+
+  .album-arrow {
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(200,200,240,0.9);
+    color: #000;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+
+  .album-arrow:hover {
+    background: rgba(255,255,255,0.95);
+    transform: translateX(-50%) scale(1.1);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+  }
+
+  .album-menu {
+    position: absolute;
+    top: calc(100% + 15px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(10,10,22,0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    z-index: 100;
+    max-height: 400px;
+    overflow-y: auto;
+    min-width: 280px;
+  }
+
+  .album-list-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .album-item-vertical {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    cursor: pointer;
+    transition: 0.25s ease;
+    border-radius: 8px;
+    background: rgba(20,20,30,0.3);
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .album-item-vertical:hover {
+    background: rgba(30,30,50,0.5);
+    border-color: rgba(255,255,255,0.15);
+    transform: translateX(3px);
+  }
+
+  .album-item-vertical.current {
+    border-color: rgba(160,160,255,0.5);
+    background: rgba(30,30,60,0.4);
+    box-shadow: 0 0 10px rgba(160,160,255,0.2);
+  }
+
+  .album-item-vertical img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 6px;
+    background: #2a2a3a;
+    flex-shrink: 0;
+  }
+
+  .album-item-vertical .album-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .album-item-vertical .album-name {
+    font-weight: 500;
+    color: #e4e4ff;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .album-item-vertical .album-tracks {
+    font-size: 0.8rem;
+    color: #aaa;
+    margin-top: 2px;
   }
 </style>
 </head>
@@ -293,6 +509,7 @@
 <canvas id="particleCanvas"></canvas>
 
 <header>
+<!-- Clicking the title now calls goHome() without any side effects -->
 <h1>pirated untitled</h1>
 <div>
 <button class="btn" onclick="createAlbum()">make an album</button>
@@ -303,19 +520,27 @@
 <!-- home grid -->
 <div id="home" class="album-grid"></div>
 
-<!-- album detail view -->
+<!-- album detail view (with back button) -->
 <div id="albumPage" class="album-view">
-<div class="album-layout">
-<img id="albumCover" class="cover-large">
-<div style="flex:1;">
-<h2 id="albumTitle" class="album-title"></h2>
-<br>
-<input type="file" id="songUpload" multiple accept="audio/*">
-<button class="btn" onclick="addSongs()" style="margin-left:0;">add tracks</button>
-<br><br>
-<div id="trackList"></div>
-</div>
-</div>
+  <div class="album-layout">
+    <div class="cover-container">
+      <img id="albumCover" class="cover-large">
+      <button class="album-arrow" onclick="toggleAlbumMenu()">▼</button>
+      <!-- Album Switcher Menu -->
+      <div id="albumMenu" class="album-menu" style="display: none;">
+        <!-- Content populated by JavaScript -->
+      </div>
+    </div>
+    <div style="flex:1;">
+      <h2 id="albumTitle" class="album-title"></h2>
+      <br>
+      <input type="file" id="songUpload" multiple accept="audio/*">
+      <button class="btn" onclick="addSongs()" style="margin-left:0;">add tracks</button>
+      <br><br>
+      <!-- track list container with drag-and-drop -->
+      <div id="trackList" class="track-list"></div>
+    </div>
+  </div>
 </div>
 
 <!-- player bar -->
@@ -326,6 +551,7 @@
 
 <!-- CUSTOMIZATION PANEL WITH REACTIVITY SLIDER (saved settings) -->
 <div class="custom-panel" id="panel" style="display:none;">
+<button class="close-btn" onclick="togglePanel()">×</button>
 <h3>particle lab</h3>
 
 <label>reactivity <span id="reactValue" class="value-badge">0.50</span></label>
@@ -394,7 +620,7 @@ function loadParticleSettings() {
   };
 }
 
-// ========== Existing music functions ==========
+// ========== Album functions ==========
 function getAll(cb) {
   const tx = db.transaction("albums", "readonly");
   tx.objectStore("albums").getAll().onsuccess = e => cb(e.target.result);
@@ -433,6 +659,7 @@ function openAlbum(id) {
   currentAlbumId = id;
   document.getElementById("home").style.display = "none";
   document.getElementById("albumPage").style.display = "block";
+  
   db.transaction("albums", "readonly")
     .objectStore("albums")
     .get(id).onsuccess = e => {
@@ -460,33 +687,239 @@ function openAlbum(id) {
         };
         input.click();
       };
+      
       renderTracks(album);
     };
+}
+
+// Album selector functions
+function populateAlbumSelector() {
+  const selector = document.getElementById("albumSelector");
+  selector.innerHTML = '<option value="">Select an album...</option>';
+  
+  getAll(albums => {
+    albums.forEach(album => {
+      const option = document.createElement("option");
+      option.value = album.id.toString();
+      option.textContent = album.name;
+      selector.appendChild(option);
+    });
+  });
+}
+
+function switchAlbum(albumId) {
+  const targetId = parseInt(albumId);
+  if (albumId && targetId !== currentAlbumId) {
+    openAlbum(targetId);
+  }
+}
+
+function toggleAlbumMenu() {
+  const menu = document.getElementById("albumMenu");
+  const isVisible = menu.style.display !== "none";
+  
+  if (isVisible) {
+    menu.style.display = "none";
+  } else {
+    populateAlbumMenu();
+    menu.style.display = "block";
+    
+    // Close menu when clicking outside
+    setTimeout(() => {
+      const closeMenu = (e) => {
+        if (!menu.contains(e.target) && !e.target.closest('.btn')) {
+          menu.style.display = "none";
+          document.removeEventListener('click', closeMenu);
+        }
+      };
+      document.addEventListener('click', closeMenu);
+    }, 10);
+  }
+}
+
+function populateAlbumMenu() {
+  const menu = document.getElementById("albumMenu");
+  const list = menu.querySelector(".album-list-vertical") || document.createElement("div");
+  list.className = "album-list-vertical";
+  list.innerHTML = "";
+  
+  getAll(albums => {
+    albums.forEach(album => {
+      const item = document.createElement("div");
+      item.className = "album-item-vertical";
+      if (album.id === currentAlbumId) {
+        item.classList.add("current");
+      }
+      
+      item.onclick = () => {
+        if (album.id !== currentAlbumId) {
+          openAlbum(album.id);
+        }
+        menu.style.display = "none";
+      };
+      
+      const img = document.createElement("img");
+      img.src = album.cover || "";
+      item.appendChild(img);
+      
+      const info = document.createElement("div");
+      info.className = "album-info";
+      
+      const name = document.createElement("div");
+      name.className = "album-name";
+      name.textContent = album.name;
+      info.appendChild(name);
+      
+      const tracks = document.createElement("div");
+      tracks.className = "album-tracks";
+      tracks.textContent = `${album.tracks ? album.tracks.length : 0} tracks`;
+      info.appendChild(tracks);
+      
+      item.appendChild(info);
+      list.appendChild(item);
+    });
+    
+    menu.innerHTML = "";
+    menu.appendChild(list);
+  });
+}
+
+// Fixed goHome function – now properly re-renders the home grid
+function goHome() {
+  document.getElementById("albumPage").style.display = "none";
+  document.getElementById("home").style.display = "block";
+  
+  // Re-render the home grid to ensure all albums display correctly
+  renderHome();
+  
+  currentAlbumId = null;
+  
+  // Clear any open menus
+  const existingMenu = document.querySelector('.track-menu');
+  if (existingMenu) existingMenu.remove();
+  
+  // Hide album menu
+  document.getElementById("albumMenu").style.display = "none";
 }
 
 function renderTracks(album) {
   const list = document.getElementById("trackList");
   list.innerHTML = "";
-  album.tracks.forEach((t, i) => {
+  
+  album.tracks.forEach((t, index) => {
     const div = document.createElement("div");
     div.className = "track";
-    const name = document.createElement("span");
-    name.textContent = (i+1) + ". " + t.name;
-    name.onclick = () => playTrack(t.blob);
-    const remove = document.createElement("div");
-    remove.className = "remove-btn";
-    remove.textContent = "•••";
-    remove.onclick = () => {
-      album.tracks.splice(i, 1);
-      save(album);
-      renderTracks(album);
+    
+    // Track name
+    const nameSpan = document.createElement("span");
+    nameSpan.textContent = (index + 1) + ". " + t.name;
+    nameSpan.onclick = () => playTrack(t.blob);
+    
+    // Menu button
+    const menuBtn = document.createElement("div");
+    menuBtn.className = "remove-btn";
+    menuBtn.textContent = "•••";
+    menuBtn.onclick = (e) => {
+      e.stopPropagation();
+      showTrackMenu(e.target, album, index);
     };
-    div.appendChild(name);
-    div.appendChild(remove);
+    
+    div.appendChild(nameSpan);
+    div.appendChild(menuBtn);
     list.appendChild(div);
   });
 }
 
+function showTrackMenu(button, album, trackIndex) {
+  // Remove any existing menu
+  const existingMenu = document.querySelector('.track-menu');
+  if (existingMenu) existingMenu.remove();
+  
+  // Create menu
+  const menu = document.createElement('div');
+  menu.className = 'track-menu';
+  
+  // Position the menu near the button
+  const rect = button.getBoundingClientRect();
+  menu.style.left = rect.right + 10 + 'px';
+  menu.style.top = rect.top - 10 + 'px';
+  
+  menu.innerHTML = `
+    <h4>Track Options</h4>
+    <div class="position-info">Your song is in position ${trackIndex + 1}</div>
+    <input type="number" id="positionInput" min="1" max="${album.tracks.length}" value="${trackIndex + 1}" placeholder="New position">
+    <button class="menu-btn" onclick="moveTrack(${trackIndex}, this)">Move</button>
+    <button class="menu-btn delete-btn" onclick="deleteTrack(${trackIndex}, this)">Delete</button>
+  `;
+  
+  document.body.appendChild(menu);
+  
+  // Focus the input
+  setTimeout(() => {
+    document.getElementById('positionInput').focus();
+    document.getElementById('positionInput').select();
+  }, 10);
+  
+  // Close menu when clicking outside
+  const closeMenu = (e) => {
+    if (!menu.contains(e.target) && e.target !== button) {
+      menu.remove();
+      document.removeEventListener('click', closeMenu);
+    }
+  };
+  setTimeout(() => document.addEventListener('click', closeMenu), 10);
+}
+
+function moveTrack(fromIndex, button) {
+  const menu = button.closest('.track-menu');
+  const newPosition = parseInt(document.getElementById('positionInput').value) - 1;
+  const albumId = currentAlbumId;
+  
+  // Fetch current album and reorder
+  db.transaction("albums", "readwrite")
+    .objectStore("albums")
+    .get(albumId).onsuccess = (event) => {
+      const album = event.target.result;
+      if (!album) return;
+      
+      if (newPosition < 0 || newPosition >= album.tracks.length || newPosition === fromIndex) {
+        menu.remove();
+        return;
+      }
+      
+      const tracks = album.tracks;
+      const [removed] = tracks.splice(fromIndex, 1);
+      tracks.splice(newPosition, 0, removed);
+      
+      // Save to IndexedDB and re-render
+      save(album);
+      renderTracks(album);
+      menu.remove();
+    };
+}
+
+function deleteTrack(trackIndex, button) {
+  const menu = button.closest('.track-menu');
+  const albumId = currentAlbumId;
+  
+  // Fetch current album and delete
+  db.transaction("albums", "readwrite")
+    .objectStore("albums")
+    .get(albumId).onsuccess = (event) => {
+      const album = event.target.result;
+      if (!album) return;
+      
+      album.tracks.splice(trackIndex, 1);
+      
+      // Save to IndexedDB and re-render
+      save(album);
+      renderTracks(album);
+      menu.remove();
+    };
+}
+
+
+// ========== MUSIC functions continued ==========
 function addSongs() {
   db.transaction("albums", "readonly")
     .objectStore("albums")
@@ -506,29 +939,23 @@ function playTrack(blob) {
   document.getElementById("nowPlaying").innerText = "● " + (blob.name || "track");
 }
 
-// ========== ADVANCED PARTICLE SYSTEM WITH SAVED SETTINGS ==========
+// ========== ADVANCED PARTICLE SYSTEM ==========
 const canvas = document.getElementById('particleCanvas');
 const ctx = canvas.getContext('2d');
 let width, height;
 let particles = [];
-let targetParticleCount = 5000; // default, can go to 10k
-let reactivityFactor = 0.50;     // slider 0-1, where 0.5 maps to 0.0009 push factor
+let targetParticleCount = 5000;
+let reactivityFactor = 0.50;
 let audioContext = null;
 let analyser = null;
 let source = null;
 let audioPlayer = document.getElementById('audioPlayer');
 
-// UI elements
 const reactSlider = document.getElementById('reactivitySlider');
 const reactSpan = document.getElementById('reactValue');
 const countSlider = document.getElementById('countSlider');
 const countSpan = document.getElementById('countValue');
 
-// reactivity scale: we want slider 0.5 to correspond to pushFactor = 0.0009 (perfect subtle)
-// map slider [0..1] to push factor [0 .. 0.0025] (max 0.0025 is still calm, but adjustable)
-// formula: pushFactor = slider * 0.005; then at 0.5 -> 0.0025? but we need 0.0009 at 0.5.
-// so: pushFactor = slider * 0.0018;  (since 0.5 * 0.0018 = 0.0009)
-// we'll use that mapping.
 reactSlider.addEventListener('input', (e) => {
   reactivityFactor = parseFloat(e.target.value);
   reactSpan.innerText = reactivityFactor.toFixed(2);
@@ -558,7 +985,7 @@ function createParticle() {
     y: Math.random(),
     vx: (Math.random() - 0.5) * 0.002,
     vy: (Math.random() - 0.5) * 0.002,
-    size: 0.5 + Math.random() * 1.5,   // slightly smaller to accommodate high counts
+    size: 0.5 + Math.random() * 1.5,
     opacity: 0.1 + Math.random() * 0.25,
     fadeSpeed: 0.0006 + Math.random() * 0.003,
     hueOffset: Math.random() * 360,
@@ -582,7 +1009,6 @@ window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 initParticles(targetParticleCount);
 
-// Connect analyser to audio element
 function connectAudioAnalyser() {
   if (audioContext) return;
   try {
@@ -607,7 +1033,6 @@ audioPlayer.addEventListener('play', () => {
 function animate() {
   if (!width || !height) return;
 
-  // Get audio level (0..1)
   let rawLevel = 0;
   if (analyser) {
     const data = new Uint8Array(analyser.frequencyBinCount);
@@ -617,12 +1042,9 @@ function animate() {
     rawLevel = sum / (data.length * 255);
   }
 
-  // Map reactivity slider to push factor: slider 0.5 => 0.0009
-  // using linear map: pushFactor = reactivityFactor * 0.0018;
-  let pushFactor = reactivityFactor * 0.0018; // at 0.5 -> 0.0009, at 1.0 -> 0.0018 (still subtle)
+  let pushFactor = reactivityFactor * 0.0018;
   let pushLevel = rawLevel * pushFactor;
 
-  // Fade trail (slower fade for dense particles)
   ctx.fillStyle = 'rgba(0,0,0,0.02)';
   ctx.fillRect(0, 0, width, height);
 
@@ -630,20 +1052,17 @@ function animate() {
   const cy = height * 0.5;
 
   for (let p of particles) {
-    // Direction toward center
     let dx = cx - p.x * width;
     let dy = cy - p.y * height;
     let dist = Math.hypot(dx, dy);
     if (dist < 0.1) dist = 0.1;
 
-    // Very gentle inward pull
     let pullStrength = 0.00015 * Math.min(1.0, dist / 700);
     let normX = dx / dist;
     let normY = dy / dist;
     p.vx += normX * pullStrength;
     p.vy += normY * pullStrength;
 
-    // Audio push (scaled by pushLevel)
     if (pushLevel > 0.00001) {
       let outX = (p.x * width - cx) / width;
       let outY = (p.y * height - cy) / height;
@@ -659,26 +1078,20 @@ function animate() {
       }
     }
 
-    // Damping
     p.vx *= 0.995;
     p.vy *= 0.995;
-
-    // Update position
     p.x += p.vx;
     p.y += p.vy;
 
-    // WRAPPING: when particle goes off one side, reappear on opposite
     if (p.x < 0.0) p.x = 1.0;
     if (p.x > 1.0) p.x = 0.0;
     if (p.y < 0.0) p.y = 1.0;
     if (p.y > 1.0) p.y = 0.0;
 
-    // Opacity drift
     p.opacity += (Math.random() - 0.5) * p.fadeSpeed;
     if (rawLevel > 0.02) p.opacity += rawLevel * 0.01 * reactivityFactor;
     p.opacity = Math.min(0.5, Math.max(0.08, p.opacity));
 
-    // Draw particle
     const particleX = p.x * width;
     const particleY = p.y * height;
     const distToCenter = Math.hypot(particleX - cx, particleY - cy);
@@ -694,27 +1107,28 @@ function animate() {
 }
 animate();
 
-// Reshuffle button
 function resetParticles() {
   initParticles(targetParticleCount);
 }
 window.resetParticles = resetParticles;
-
-// Video upload placeholder
-document.getElementById("videoUpload").onchange = () => {
-  alert('Particle canvas always active. Sliders control everything.');
-};
 
 function togglePanel() {
   const panel = document.getElementById("panel");
   panel.style.display = panel.style.display === "none" ? "block" : "none";
 }
 
-// Load settings after everything is ready
-window.addEventListener('load', () => {
-  // settings are loaded in db.onsuccess, but we also need to ensure UI reflects saved after DB
-  // the loadParticleSettings is called inside db.onsuccess already.
-});
+// Expose functions globally
+window.goHome = goHome;
+window.togglePanel = togglePanel;
+window.createAlbum = createAlbum;
+window.addSongs = addSongs;
+window.resetParticles = resetParticles;
+window.moveTrack = moveTrack;
+window.deleteTrack = deleteTrack;
+window.switchAlbum = switchAlbum;
+window.toggleAlbumMenu = toggleAlbumMenu;
+window.setReactive = function() {};
+window.clearBackground = function() { resetParticles(); };
 </script>
 </body>
 </html>
